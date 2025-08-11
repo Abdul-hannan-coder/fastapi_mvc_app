@@ -85,6 +85,5 @@ async def edit_contact_route(
         phone=phone,
         address=address
     )
-    # You will need to write an update_contact function in your controller to update by id
     await update_contact(db, contact_id, updated_contact)
     return RedirectResponse(url="/contacts", status_code=303)

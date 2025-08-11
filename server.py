@@ -17,11 +17,10 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-# Serve static files under /static URL
+
 app.mount("/static", StaticFiles(directory="assets"), name="static")
 
-# UI routes (e.g., templates, form pages, listing)
 app.include_router(contact_router, prefix="/contacts")
 
-# Additional UI or API routes
+
 app.include_router(view_router)
