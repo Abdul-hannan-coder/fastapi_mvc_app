@@ -2,24 +2,26 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-# Install uv and netcat (for wait script)
-RUN apt-get update && apt-get install -y netcat-openbsd && pip install uv
+# Install system dependencies
+RUN apt-get update && \
+    apt-get install -y netcat-openbsd curl && \
+    rm -rf /var/lib/apt/lists/*
 
-# Copy project files for dependency installation
-COPY pyproject.toml uv.lock .
+# Install uv using standalone installer
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 
-# Install dependencies using uv
+# Add uv to PATH
+ENV PATH="/root/.local/bin:$PATH"
+
+# Copy dependency files first for better Docker cache usage
+COPY pyproject.toml uv.lock /app/
+
+# Install Python dependencies using uv
 RUN uv sync --frozen
 
-# Copy the rest of the application code
-COPY . .
+# Copy application code
+COPY . /app
 
-# Copy wait script
-COPY wait-for-mongo.sh .
-RUN chmod +x wait-for-mongo.sh
+# No need to chmod or run wait-for-mongo.sh
 
-# Expose the port
-EXPOSE 8000
-
-# Command to run the FastAPI app with wait script
-CMD ["./wait-for-mongo.sh", "uv", "run", "uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uv", "run", "python", "-m", "uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8000"]
