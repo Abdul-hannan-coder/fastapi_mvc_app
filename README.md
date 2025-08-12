@@ -138,6 +138,111 @@ Use the "Add New" button to create contacts, edit or delete existing ones.
     
     # Run the server
     uvicorn main:app --reload
+
+
+Nginx Configuration for FastAPI Application
+===========================================
+
+This document outlines the steps to configure Nginx as a reverse proxy for a containerized FastAPI application using Docker on a Ubuntu VM. The goal is to route public traffic to the application on a standard port (like 80) without exposing the application's internal port directly.
+
+Prerequisites
+-------------
+
+*   A working Docker environment on an Oracle Cloud VM.
+*   A Docker Compose file (\`docker-compose.yml\`) that defines and runs the FastAPI application and a MongoDB database.
+*   The FastAPI application container is running and is part of a Docker network (e.g., \`fastapi\_mvc\_app\_app-network\`).
+*   Port 80 is open in your Oracle Cloud VM's security list.
+
+Step 1: Create the Nginx Configuration Directory
+------------------------------------------------
+
+First, create a directory on your VM to store the Nginx configuration file. This directory will be mounted into the Nginx container.
+
+    mkdir -p ~/nginx/conf.d
+
+Step 2: Create the Nginx Configuration File
+-------------------------------------------
+
+Using a text editor like `nano`, create a new file named `fastapi.conf` inside the directory you just created.
+
+    nano ~/nginx/conf.d/fastapi.conf
+
+Paste the following content into the file. Be sure to replace `158.180.30.111` with your VM's public IP address.
+
+    server {
+        listen 80;
+        server_name 158.180.30.111; # Your VM's public IP address
+    
+        location / {
+            # This points to the 'app' service within the 'app-network' (internal Docker DNS)
+            proxy_pass http://app:8000;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+    }
+    
+
+**Explanation of the Configuration:**
+
+*   `listen 80;`: Nginx listens for incoming traffic on port 80 (standard HTTP).
+*   `server_name 158.180.30.111;`: Nginx responds to requests made to your VM's public IP.
+*   `location / { ... }`: This block handles all requests to the root path.
+*   `proxy_pass http://app:8000;`: This is the most important line. It forwards the incoming request to the Docker service named "app" on its internal port "8000." The name "app" comes from your `docker-compose.yml` file.
+
+Step 3: Run the Nginx Docker Container
+--------------------------------------
+
+Now, run the Nginx container, connecting it to the same network as your FastAPI app and mounting the configuration file. This command will start the container in detached mode (`-d`).
+
+    docker run -d \
+      --name nginx-proxy \
+      --network fastapi_mvc_app_app-network \
+      -p 80:80 \
+      -v ~/nginx/conf.d:/etc/nginx/conf.d:ro \
+      nginx:latest
+    
+
+**Explanation of the Command:**
+
+*   `--name nginx-proxy`: Assigns a user-friendly name to the container.
+*   `--network fastapi_mvc_app_app-network`: Connects the Nginx container to the same internal Docker network as your FastAPI app. This allows Nginx to communicate with your app using the service name "app."
+*   `-p 80:80`: Maps port 80 of your host VM to port 80 of the Nginx container.
+*   `-v ~/nginx/conf.d:/etc/nginx/conf.d:ro`: Mounts your local configuration directory into the container. The `:ro` means it is read-only, which is a good security practice.
+*   `nginx:latest`: Specifies the Docker image to use.
+
+Step 4: Verify the Setup
+------------------------
+
+Once the container is running, you can verify that all components are working as expected.
+
+1.  Check that all containers are running:
+
+    docker ps
+
+3.  Open your web browser and navigate to your public IP address:
+
+    http://158.180.30.111/
+
+You should now see your FastAPI application's response, served through Nginx.
+
+Future Goal: Adding SSL/HTTPS Configuration
+-------------------------------------------
+
+For a secure and professional deployment, the next step is to add SSL (HTTPS). This requires a domain name, as free certificates cannot be issued for raw IP addresses.
+
+The high-level steps for this are:
+
+1.  Purchase a domain name and point its "A" record to your VM's public IP.
+2.  Open port 443 (HTTPS) in your Oracle Cloud VM's security rules.
+3.  Use a tool like Certbot to obtain a free SSL certificate from Let's Encrypt for your domain.
+4.  Update your Nginx configuration file to listen on port 443 and use the SSL certificate.
+5.  Modify the Nginx Docker run command to also expose port 443 and mount the certificate directories.
+
+* * *
+
+End of Document.
     
 
 © 2025 Contact App by Your Name
