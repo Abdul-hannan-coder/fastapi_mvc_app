@@ -1,0 +1,11 @@
+services:
+  nginx-proxy:
+    image: nginx:latest
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - .:/etc/nginx/conf.d:ro  # <--- FIXED LINE (single dot)
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - /var/www/certbot:/var/www/certbot:ro
+    # ... (other lines for nginx-proxy if any)
