@@ -1,248 +1,286 @@
-Contact App - Project Documentation
+# Contact Management App
 
-Contact Management App - Project Documentation
-==============================================
+A modern CRUD web application to manage contacts built with **FastAPI** (backend) and **Jinja2** templates (frontend). This project demonstrates MVC architecture principles with FastAPI, MongoDB integration, and responsive web design.
 
-This documentation explains the Contact Management App built using **FastAPI** (backend) and **Jinja2** templates (frontend). It covers setup, routing, templates, database interactions, and how to run the project.
+## 🚀 Features
 
-1\. Project Overview
---------------------
+- **Full CRUD Operations**: Create, Read, Update, Delete contacts
+- **FastAPI Backend**: Async/await support with automatic API documentation
+- **MongoDB Integration**: Asynchronous database operations using Motor
+- **Responsive Design**: Bootstrap 4 for mobile-friendly UI
+- **MVC Architecture**: Clean separation of concerns
+- **Form Validation**: Pydantic models with email validation
+- **Environment Configuration**: Secure database connection management
 
-*   A CRUD web app to manage contacts: Create, Read, Update, Delete contacts.
-*   Backend implemented with `FastAPI`, serving HTML responses using `Jinja2Templates`.
-*   Data stored in a MongoDB database, accessed asynchronously.
-*   Frontend uses Bootstrap 4 for styling and responsive layout.
+## 📁 Project Structure
 
-2\. Folder Structure
---------------------
+```
+fastapi_mvc_app/
+├── main.py                     # FastAPI app entry point
+├── server.py                   # Server configuration
+├── controllers/
+│   └── contact_controller.py   # Business logic for CRUD operations
+├── models/
+│   └── contact_model.py        # Pydantic data models
+├── routes/
+│   ├── contact_routes.py       # API routes for contacts
+│   └── view_routes.py          # HTML view routes
+├── views/                      # Jinja2 HTML templates
+│   ├── index.html             # Contact list view
+│   ├── form.html              # Create/Edit contact form
+│   ├── show.html              # Contact details view
+│   └── partials/
+│       ├── head.html          # Common head section
+│       └── navbar.html        # Navigation component
+├── database/
+│   └── database.py            # Database connection setup
+├── utils/
+│   └── helper.py              # Utility functions
+└── pyproject.toml             # Project dependencies and metadata
+```
 
-*   `main.py` - FastAPI app entry point and route mounting.
-*   `routers/contacts.py` - Contains all routes related to contacts.
-*   `controllers/contact_controller.py` - Business logic for CRUD operations.
-*   `models/contact_model.py` - Data model for Contact using Pydantic.
-*   `views/` - Jinja2 HTML templates for rendering pages.
-*   `static/assets/` - CSS and other static assets (Bootstrap, FontAwesome, custom CSS).
+## 🛠️ Installation and Setup
 
-3\. Installation and Setup
---------------------------
+### Prerequisites
+- Python 3.12 or higher
+- MongoDB (local or cloud instance)
+- UV package manager (recommended)
 
-To get the project running locally, follow these steps:
+### Quick Start
 
-    # Clone the repo
-    git clone <your-github-repo-url>
-    cd <repo-folder>
-    
-    # Create virtual environment (optional but recommended)
-    python3 -m venv venv
-    source venv/bin/activate    # Linux/macOS
-    venv\Scripts\activate       # Windows
-    
-    # Install dependencies
-    pip install fastapi uvicorn motor jinja2
-    
-    # Start the FastAPI server
-    uvicorn main:app --reload
-    
+1. **Clone the repository**
+   ```bash
+   git clone <your-github-repo-url>
+   cd fastapi_mvc_app
+   ```
 
-\- The server will be running by default at [http://127.0.0.1:8000](http://127.0.0.1:8000). - MongoDB connection should be configured in `main.py` or your app settings.
+2. **Install UV (if not already installed)**
+   ```bash
+   # On macOS and Linux
+   curl -LsSf https://astral.sh/uv/install.sh | sh
+   
+   # On Windows
+   powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+   ```
 
-4\. Routing
------------
+3. **Install dependencies using UV**
+   ```bash
+   # Install all dependencies from pyproject.toml
+   uv sync
+   
+   # Or add dependencies individually if needed
+   uv add fastapi[all]
+   uv add jinja2
+   uv add motor
+   uv add pydantic[email]
+   uv add python-dotenv
+   uv add uvicorn
+   ```
 
-*   `GET /contacts` - List all contacts.
-*   `GET /contacts/create` - Show form to create a new contact.
-*   `POST /contacts/create` - Submit new contact data and save to DB.
-*   `GET /contacts/edit/{contact_id}` - Show form to edit existing contact (pre-filled).
-*   `POST /contacts/edit/{contact_id}` - Submit updated data to update the contact.
-*   `POST /contacts/delete/{contact_id}` - Delete a contact by ID.
-*   `GET /contacts/show/{contact_id}` - View details of a single contact.
+4. **Set up environment variables**
+   ```bash
+   # Create .env file
+   echo "MONGODB_URL=mongodb://localhost:27017" > .env
+   echo "DATABASE_NAME=contact_app" >> .env
+   ```
 
-5\. Templates
--------------
+5. **Start the development server**
+   ```bash
+   # Using UV
+   uv run uvicorn main:app --reload
+   
+   # Or activate virtual environment and run
+   uv run python -m uvicorn main:app --reload
+   ```
+
+6. **Access the application**
+   - Main application: http://127.0.0.1:8000/contacts
+   - API documentation: http://127.0.0.1:8000/docs
+   - Alternative API docs: http://127.0.0.1:8000/redoc
+
+## 🔄 API Routes
+
+- `GET /api/contacts` - List all contacts (JSON response)
+- `GET /api/contacts/{contact_id}` - Get details of a specific contact
+- `POST /api/contacts` - Create a new contact
+- `PUT /api/contacts/{contact_id}` - Update an existing contact
+- `DELETE /api/contacts/{contact_id}` - Delete a contact
+
+## 🖥️ View Routes
+
+- `GET /contacts` - List all contacts (HTML view)
+- `GET /contacts/create` - Show form to create a new contact
+- `POST /contacts/create` - Submit new contact data
+- `GET /contacts/edit/{contact_id}` - Show form to edit an existing contact
+- `POST /contacts/edit/{contact_id}` - Submit updated contact data
+- `POST /contacts/delete/{contact_id}` - Delete a contact
+- `GET /contacts/show/{contact_id}` - View contact details
+
+## 🎨 Templates
 
 HTML pages use Jinja2 templating engine to dynamically render data:
 
-*   `index.html` - Lists all contacts in a table with action buttons.
-*   `form.html` - Used for both creating and editing contacts. The form fields are pre-filled for edit mode.
-*   `show.html` - Displays detailed contact information.
-*   `404.html` - Error page shown if a contact is not found.
-*   Partial templates for common page sections like `head.html` and `navbar.html`.
+- `index.html` - Lists all contacts in a table with action buttons
+- `form.html` - Used for both creating and editing contacts (fields pre-filled for edit mode)
+- `show.html` - Displays detailed contact information
+- Partial templates for common sections:
+  - `partials/head.html` - Common HTML head section
+  - `partials/navbar.html` - Navigation component
 
 Form submissions use `POST` method with `action` URL changing based on context (create vs edit).
 
-6\. Database Interaction
-------------------------
+## 🗄️ Database Configuration
 
-Contacts are stored in MongoDB, accessed asynchronously via the `motor` driver.
+The application uses MongoDB as its database, with the connection managed through the Motor driver for asynchronous operations:
 
-*   `ContactModel` defines fields like first name, last name, email, phone, and address.
-*   CRUD operations are defined in `contact_controller.py` and include:
+- `ContactModel` defines fields like first name, last name, email, phone, and address
+- CRUD operations are defined in `contact_controller.py` and include:
+  - `get_all_contacts(db)`
+  - `get_contact_by_id(db, id)`
+  - `create_contact(db, contact)`
+  - `update_contact(db, id, contact)`
+  - `delete_contact(db, id)`
 
-*   `get_all_contacts(db)`
-*   `get_contact_by_id(db, id)`
-*   `create_contact(db, contact)`
-*   `update_contact(db, id, contact)`
-*   `delete_contact(db, id)`
+- Routes call these controller functions and pass the database instance from the FastAPI app state
 
-*   Routes call these controller functions and pass the database instance from the FastAPI app state.
+## 🔧 Development Notes
 
-7\. How Data Is Passed to Templates
------------------------------------
+- Ensure MongoDB is running and accessible before starting the application
+- The project requires Python 3.12+ for optimal compatibility
+- Uses asynchronous functions throughout for efficient performance
+- Bootstrap 4 and FontAwesome are used for responsive UI styling and icons
+- Environment variables are used for secure database connection management
 
-Data is sent to templates using `TemplateResponse` with a dictionary of variables:
+## 📋 Quick Commands Reference
 
-    return templates.TemplateResponse("index.html", {
-        "request": request,
-        "contacts": contacts_list
-    })
-    
+```bash
+# Install UV package manager
+curl -LsSf https://astral.sh/uv/install.sh | sh
 
-The `request` object is always passed for Jinja2 compatibility, and additional data like `contacts` is passed for rendering.
+# Clone and setup project
+git clone <repo-url>
+cd fastapi_mvc_app
 
-8\. Running the Project
------------------------
+# Install dependencies
+uv sync
 
-Start the FastAPI server with:
+# Add new dependencies
+uv add package_name
 
-    uvicorn main:app --reload
+# Run development server
+uv run uvicorn main:app --reload
 
-Open your browser and visit [/contacts](http://127.0.0.1:8000/contacts) to see the contact list.
-
-Use the "Add New" button to create contacts, edit or delete existing ones.
-
-9\. Notes
----------
-
-*   Make sure MongoDB is running and accessible.
-*   Use Python 3.8+ for compatibility.
-*   Use virtual environments to isolate dependencies.
-*   The project uses asynchronous functions to keep performance efficient.
-*   Bootstrap and FontAwesome CDN links are included for UI styling and icons.
-
-10\. Commands Summary
----------------------
-
-    # Clone the repo
-    git clone <repo-url>
-    
-    # Create and activate virtual environment (Linux/macOS)
-    python3 -m venv venv
-    source venv/bin/activate
-    
-    # Windows PowerShell
-    python -m venv venv
-    .\venv\Scripts\Activate.ps1
-    
-    # Install dependencies
-    pip install fastapi uvicorn motor jinja2
-    
-    # Run the server
-    uvicorn main:app --reload
+# Run with custom host and port
+uv run uvicorn main:app --reload --host 0.0.0.0 --port 8000
+```
 
 
-Nginx Configuration for FastAPI Application
-===========================================
+## 🚢 Deployment
 
-This document outlines the steps to configure Nginx as a reverse proxy for a containerized FastAPI application using Docker on a Ubuntu VM. The goal is to route public traffic to the application on a standard port (like 80) without exposing the application's internal port directly.
+### Docker Deployment
 
-Prerequisites
--------------
+1. **Build the Docker image**
+   ```bash
+   # Create Dockerfile if not exists
+   # Build the image
+   docker build -t fastapi-contact-app .
+   ```
 
-*   A working Docker environment on an Oracle Cloud VM.
-*   A Docker Compose file (\`docker-compose.yml\`) that defines and runs the FastAPI application and a MongoDB database.
-*   The FastAPI application container is running and is part of a Docker network (e.g., \`fastapi\_mvc\_app\_app-network\`).
-*   Port 80 is open in your Oracle Cloud VM's security list.
+2. **Run with Docker Compose**
+   ```bash
+   # Start all services (app + MongoDB)
+   docker-compose up -d
+   ```
 
-Step 1: Create the Nginx Configuration Directory
-------------------------------------------------
+### Nginx Reverse Proxy Setup
 
-First, create a directory on your VM to store the Nginx configuration file. This directory will be mounted into the Nginx container.
+For production deployment, configure Nginx as a reverse proxy:
 
-    mkdir -p ~/nginx/conf.d
+1. **Create Nginx configuration directory**
+   ```bash
+   mkdir -p ~/nginx/conf.d
+   ```
 
-Step 2: Create the Nginx Configuration File
--------------------------------------------
+2. **Create Nginx configuration file**
+   ```bash
+   nano ~/nginx/conf.d/fastapi.conf
+   ```
 
-Using a text editor like `nano`, create a new file named `fastapi.conf` inside the directory you just created.
+3. **Add the following configuration**
+   ```nginx
+   server {
+       listen 80;
+       server_name your-domain-or-ip;
+   
+       location / {
+           proxy_pass http://app:8000;
+           proxy_set_header Host $host;
+           proxy_set_header X-Real-IP $remote_addr;
+           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+           proxy_set_header X-Forwarded-Proto $scheme;
+       }
+   }
+   ```
 
-    nano ~/nginx/conf.d/fastapi.conf
+4. **Run Nginx container**
+   ```bash
+   docker run -d \
+     --name nginx-proxy \
+     --network fastapi_mvc_app_app-network \
+     -p 80:80 \
+     -v ~/nginx/conf.d:/etc/nginx/conf.d:ro \
+     nginx:latest
+   ```
 
-Paste the following content into the file. Be sure to replace `158.180.30.111` with your VM's public IP address.
+5. **Verify deployment**
+   ```bash
+   # Check running containers
+   docker ps
+   
+   # Test application
+   curl http://your-server-ip/contacts
+   ```
 
-    server {
-        listen 80;
-        server_name 158.180.30.111; # Your VM's public IP address
-    
-        location / {
-            # This points to the 'app' service within the 'app-network' (internal Docker DNS)
-            proxy_pass http://app:8000;
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
-        }
-    }
-    
+## 🔒 Production Considerations
 
-**Explanation of the Configuration:**
+### SSL/HTTPS Setup
 
-*   `listen 80;`: Nginx listens for incoming traffic on port 80 (standard HTTP).
-*   `server_name 158.180.30.111;`: Nginx responds to requests made to your VM's public IP.
-*   `location / { ... }`: This block handles all requests to the root path.
-*   `proxy_pass http://app:8000;`: This is the most important line. It forwards the incoming request to the Docker service named "app" on its internal port "8000." The name "app" comes from your `docker-compose.yml` file.
+For production deployment with SSL:
 
-Step 3: Run the Nginx Docker Container
---------------------------------------
+1. **Obtain a domain name** and configure DNS A record
+2. **Open port 443** in your firewall/security groups
+3. **Use Let's Encrypt for SSL certificates**:
+   ```bash
+   # Install certbot
+   sudo apt install certbot python3-certbot-nginx
+   
+   # Obtain certificate
+   sudo certbot --nginx -d your-domain.com
+   ```
+4. **Update Nginx configuration** to include SSL settings
 
-Now, run the Nginx container, connecting it to the same network as your FastAPI app and mounting the configuration file. This command will start the container in detached mode (`-d`).
+### Security Best Practices
 
-    docker run -d \
-      --name nginx-proxy \
-      --network fastapi_mvc_app_app-network \
-      -p 80:80 \
-      -v ~/nginx/conf.d:/etc/nginx/conf.d:ro \
-      nginx:latest
-    
+- Use environment variables for sensitive configuration
+- Enable CORS properly for production
+- Implement rate limiting
+- Regular security updates for dependencies
+- Use secrets management for database credentials
+- Enable MongoDB authentication in production
 
-**Explanation of the Command:**
+## 🔮 Future Enhancements
 
-*   `--name nginx-proxy`: Assigns a user-friendly name to the container.
-*   `--network fastapi_mvc_app_app-network`: Connects the Nginx container to the same internal Docker network as your FastAPI app. This allows Nginx to communicate with your app using the service name "app."
-*   `-p 80:80`: Maps port 80 of your host VM to port 80 of the Nginx container.
-*   `-v ~/nginx/conf.d:/etc/nginx/conf.d:ro`: Mounts your local configuration directory into the container. The `:ro` means it is read-only, which is a good security practice.
-*   `nginx:latest`: Specifies the Docker image to use.
+- [ ] User authentication and authorization
+- [ ] Contact search and filtering capabilities
+- [ ] Export contacts to CSV/Excel
+- [ ] Contact categories and tags
+- [ ] API rate limiting and caching
+- [ ] Mobile-responsive Progressive Web App (PWA)
+- [ ] Contact import functionality
+- [ ] Advanced contact validation
+- [ ] Contact history and audit trail
+- [ ] Email integration for contact communication
 
-Step 4: Verify the Setup
-------------------------
+---
 
-Once the container is running, you can verify that all components are working as expected.
-
-1.  Check that all containers are running:
-
-    docker ps
-
-3.  Open your web browser and navigate to your public IP address:
-
-    http://158.180.30.111/
-
-You should now see your FastAPI application's response, served through Nginx.
-
-Future Goal: Adding SSL/HTTPS Configuration
--------------------------------------------
-
-For a secure and professional deployment, the next step is to add SSL (HTTPS). This requires a domain name, as free certificates cannot be issued for raw IP addresses.
-
-The high-level steps for this are:
-
-1.  Purchase a domain name and point its "A" record to your VM's public IP.
-2.  Open port 443 (HTTPS) in your Oracle Cloud VM's security rules.
-3.  Use a tool like Certbot to obtain a free SSL certificate from Let's Encrypt for your domain.
-4.  Update your Nginx configuration file to listen on port 443 and use the SSL certificate.
-5.  Modify the Nginx Docker run command to also expose port 443 and mount the certificate directories.
-
-* * *
-
-End of Document.
-    
-
-© 2025 Contact App by Your Name
+© 2025 FastAPI Contact Management App
